@@ -1,0 +1,150 @@
+# Maintainer: Your Name <your.email@example.com>
+# Based on: systemd PKGBUILD from Arch Linux ARM
+
+pkgname=systemd-avf
+pkgver=256.7
+pkgrel=1
+pkgdesc="systemd patched for Android Virtualization Framework (AVF)"
+arch=('aarch64')
+url="https://www.freedesktop.org/wiki/Software/systemd"
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('systemd-libs' 'acl' 'bash' 'cryptsetup' 'libcryptsetup.so' 'dbus'
+         'iptables' 'kbd' 'kmod' 'libkmod.so' 'hwdata' 'libcap' 'libcap.so'
+         'libgcrypt' 'libxcrypt' 'libcrypt.so' 'libidn2' 'lz4' 'pam' 'libelf'
+         'libseccomp' 'libseccomp.so' 'util-linux' 'libblkid.so' 'libmount.so'
+         'xz' 'pcre2' 'audit' 'openssl' 'libp11-kit' 'libp11-kit.so')
+makedepends=('acl' 'cryptsetup' 'docbook-xsl' 'gperf' 'lz4' 'xz' 'pam' 'libelf'
+             'intltool' 'iptables' 'kmod' 'libcap' 'libidn2' 'libgcrypt'
+             'libmicrohttpd' 'libxcrypt' 'libxslt' 'util-linux'
+             'linux-api-headers' 'python-jinja' 'python-lxml' 'quota-tools'
+             'shadow' 'git' 'meson' 'libseccomp' 'pcre2' 'audit' 'kexec-tools'
+             'libxkbcommon' 'bash-completion' 'p11-kit' 'systemd' 'rsync'
+             'bpf' 'libbpf' 'clang' 'llvm' 'curl' 'gnutls' 'python-pyelftools'
+             'libpwquality' 'tpm2-tss' 'python-pefile')
+provides=('nss-myhostname' "systemd-tools=$pkgver" "udev=$pkgver"
+          "systemd=$pkgver" "systemd-sysvcompat=$pkgver" "systemd-resolvconf=$pkgver")
+conflicts=('nss-myhostname' 'systemd-tools' 'udev' 'systemd' 'systemd-sysvcompat' 'systemd-resolvconf')
+replaces=('nss-myhostname' 'systemd-tools' 'udev' 'systemd' 'systemd-sysvcompat' 'systemd-resolvconf')
+backup=(etc/pam.d/systemd-user
+        etc/systemd/coredump.conf
+        etc/systemd/journald.conf
+        etc/systemd/journal-remote.conf
+        etc/systemd/journal-upload.conf
+        etc/systemd/logind.conf
+        etc/systemd/networkd.conf
+        etc/systemd/oomd.conf
+        etc/systemd/pstore.conf
+        etc/systemd/resolved.conf
+        etc/systemd/sleep.conf
+        etc/systemd/system.conf
+        etc/systemd/timesyncd.conf
+        etc/systemd/user.conf
+        etc/udev/udev.conf)
+source=("git+https://github.com/systemd/systemd-stable.git#tag=v$pkgver"
+        "systemd-esp-type-ignore.patch")
+sha256sums=('SKIP'
+            'SKIP')
+
+prepare() {
+    cd systemd-stable
+
+    # Apply AVF patch to ignore ESP partition type validation
+    patch -Np1 -i "$srcdir/systemd-esp-type-ignore.patch"
+}
+
+build() {
+    local _meson_options=(
+        -Dmode=release
+        -Daudit=true
+        -Dapparmor=false
+        -Dselinux=false
+        -Dima=false
+        -Dsmack=false
+        -Dgcrypt=true
+        -Dgnutls=true
+        -Dopenssl=true
+        -Dcryptolib=openssl
+        -Dp11kit=true
+        -Dlibcryptsetup=true
+        -Dlibcryptsetup-plugins=true
+        -Delfutils=true
+        -Dzlib=true
+        -Dbzip2=true
+        -Dxz=true
+        -Dlz4=true
+        -Dzstd=true
+        -Dxkbcommon=true
+        -Dpcre2=true
+        -Dglib=false
+        -Ddbus=true
+        -Ddefault-dnssec=allow-downgrade
+        -Ddefault-dns-over-tls=no
+        -Ddefault-mdns=yes
+        -Ddefault-llmnr=yes
+        -Dresolve=true
+        -Ddns-over-tls=openssl
+        -Ddns-servers=
+        -Dntp-servers=
+        -Dremote=true
+        -Dcreate-log-dirs=false
+        -Dnss-myhostname=true
+        -Dnss-mymachines=true
+        -Dnss-resolve=true
+        -Dnss-systemd=true
+        -Dlibiptc=true
+        -Dseccomp=true
+        -Dkmod=true
+        -Dxenctrl=false
+        -Dpam=true
+        -Dpwquality=true
+        -Dmicrohttpd=true
+        -Dlibcurl=true
+        -Defi=true
+        -Dtpm=true
+        -Dtpm2=true
+        -Dhwdb=true
+        -Dsysusers=true
+        -Dstandalone-binaries=true
+        -Ddefault-kill-user-processes=false
+        -Dtests=false
+        -Dinstall-tests=false
+        -Dtty-gid=5
+        -Dusers-gid=984
+        -Dnobody-user=nobody
+        -Dnobody-group=nobody
+        -Dsplit-usr=false
+        -Dsplit-bin=true
+        -Db_lto=false
+        -Db_ndebug=false
+        -Dman=false
+        -Dhtml=false
+        -Dtranslations=true
+        -Dnologin-path=/usr/bin/nologin
+        -Dhalt-path=/usr/bin/halt
+        -Dreboot-path=/usr/bin/reboot
+        -Dpoweroff-path=/usr/bin/poweroff
+        -Dshutdown-path=/usr/bin/shutdown
+        -Dtelinit-path=/usr/bin/telinit
+        -Drc-local=/etc/rc.local
+        -Dloadkeys-path=/usr/bin/loadkeys
+        -Dsetfont-path=/usr/bin/setfont
+        -Ddebug-shell=/usr/bin/bash
+        -Dfallback-hostname='archarm'
+        -Ddefault-hierarchy=unified
+    )
+
+    arch-meson systemd-stable build "${_meson_options[@]}"
+    meson compile -C build
+}
+
+check() {
+    meson test -C build
+}
+
+package() {
+    meson install -C build --destdir "$pkgdir"
+
+    # Install license
+    install -Dm644 systemd-stable/LICENSE.GPL2 "$pkgdir/usr/share/licenses/$pkgname/LICENSE.GPL2"
+    install -Dm644 systemd-stable/LICENSE.LGPL2.1 "$pkgdir/usr/share/licenses/$pkgname/LICENSE.LGPL2.1"
+}

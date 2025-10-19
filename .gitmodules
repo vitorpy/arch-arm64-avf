@@ -1,0 +1,3 @@
+[submodule "avf-sources"]
+	path = avf-sources
+	url = https://android.googlesource.com/platform/packages/modules/Virtualization

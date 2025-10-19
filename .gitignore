@@ -1,0 +1,47 @@
+# Build artifacts
+build/
+repo/aarch64/*.pkg.tar.zst
+repo/aarch64/*.db*
+repo/aarch64/*.files*
+
+# Package build directories
+pkgbuilds/*/src/
+pkgbuilds/*/pkg/
+pkgbuilds/*/*.log
+pkgbuilds/*/*.tar.gz
+pkgbuilds/*/*.tar.xz
+pkgbuilds/*/*.tar.zst
+
+# Downloaded sources (except submodules)
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.zip
+
+# Logs
+*.log
+
+# Temporary files
+*~
+*.swp
+*.swo
+.*.swp
+.*.swo
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# SSH keys and secrets
+*.pem
+*.key
+!*.pub
+
+# Local configuration
+local.conf
+override.conf

@@ -1,0 +1,43 @@
+# Maintainer: Your Name <your.email@example.com>
+pkgname=avf-storage-balloon-agent
+pkgver=16.0.0.r2
+pkgrel=1
+pkgdesc="AVF guest service for dynamic memory management via ballooning"
+arch=('aarch64')
+url="https://android.googlesource.com/platform/packages/modules/Virtualization"
+license=('Apache')
+depends=('gcc-libs')
+makedepends=('rust' 'cargo' 'protobuf' 'git')
+source=("avf::git+https://android.googlesource.com/platform/packages/modules/Virtualization#tag=android-16.0.0_r2")
+sha256sums=('SKIP')
+
+prepare() {
+    cd "$srcdir/avf/guest/$pkgname"
+
+    # Remove cargo config that may interfere with Arch builds
+    rm -f .cargo/config.toml
+
+    # Generate Cargo.lock if it doesn't exist
+    cargo generate-lockfile
+}
+
+build() {
+    cd "$srcdir/avf/guest/$pkgname"
+
+    export RUSTFLAGS="-C linker=gcc"
+    cargo build --release --locked
+}
+
+check() {
+    cd "$srcdir/avf/guest/$pkgname"
+    cargo test --release --locked
+}
+
+package() {
+    cd "$srcdir/avf/guest/$pkgname"
+
+    install -Dm755 "target/release/$pkgname" "$pkgdir/usr/bin/$pkgname"
+
+    # Install license
+    install -Dm644 "$srcdir/avf/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
