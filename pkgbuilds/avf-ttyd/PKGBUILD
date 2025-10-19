@@ -1,0 +1,80 @@
+# Maintainer: Your Name <your.email@example.com>
+
+pkgname=avf-ttyd
+pkgver=1.7.7
+pkgrel=1
+pkgdesc="ttyd patched for Android Virtualization Framework with SSL client cert support"
+arch=('aarch64')
+url="https://github.com/tsl0922/ttyd"
+license=('MIT')
+depends=('json-c' 'libwebsockets' 'libuv' 'openssl')
+makedepends=('cmake' 'git' 'vim')
+provides=('ttyd')
+conflicts=('ttyd')
+source=("ttyd::git+https://github.com/tsl0922/ttyd.git#tag=$pkgver"
+        "libwebsockets::git+https://github.com/warmcat/libwebsockets.git#tag=v4.3.3"
+        "client_cert.patch"
+        "xtermjs_a11y.patch")
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+    # First build patched libwebsockets
+    cd "$srcdir/libwebsockets"
+
+    # Apply AVF client certificate patch to libwebsockets
+    patch -Np1 -i "$srcdir/client_cert.patch"
+
+    # Prepare ttyd
+    cd "$srcdir/ttyd"
+
+    # Apply AVF accessibility patch
+    patch -Np1 -i "$srcdir/xtermjs_a11y.patch"
+}
+
+build() {
+    # Build patched libwebsockets first
+    echo "Building patched libwebsockets..."
+    cmake -B build-lws -S libwebsockets \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DLWS_WITH_LIBUV=ON \
+        -DLWS_WITH_MBEDTLS=OFF \
+        -DLWS_WITH_OPENSSL=ON \
+        -DLWS_WITHOUT_TESTAPPS=ON \
+        -DLWS_IPV6=ON \
+        -DLWS_WITH_HTTP2=OFF
+
+    cmake --build build-lws
+
+    # Install libwebsockets to a temporary location for ttyd to find
+    DESTDIR="$srcdir/lws-install" cmake --install build-lws
+
+    # Build ttyd with patched libwebsockets
+    echo "Building ttyd..."
+    cmake -B build -S ttyd \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -Dlibwebsockets_DIR="$srcdir/lws-install/usr/lib/cmake/libwebsockets"
+
+    cmake --build build
+}
+
+check() {
+    # Basic smoke test
+    ./build/ttyd --version
+}
+
+package() {
+    # Install patched libwebsockets
+    DESTDIR="$pkgdir" cmake --install build-lws
+
+    # Install ttyd
+    DESTDIR="$pkgdir" cmake --install build
+
+    # Install licenses
+    install -Dm644 ttyd/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 libwebsockets/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.libwebsockets"
+}

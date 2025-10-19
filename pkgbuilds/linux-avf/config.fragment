@@ -1,0 +1,30 @@
+# AVF-specific kernel configuration options
+# These options will be merged with the base Arch ARM kernel config
+
+# Virtio Sound (required by AVF)
+CONFIG_SND_VIRTIO=y
+CONFIG_SND=y
+CONFIG_SOUND=y
+
+# DRM as module (AVF requirement)
+CONFIG_DRM=m
+
+# Virtio drivers (required for AVF VM)
+CONFIG_VIRTIO=y
+CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_BLK=y
+CONFIG_VIRTIO_NET=y
+CONFIG_VIRTIO_CONSOLE=y
+CONFIG_VIRTIO_BALLOON=y
+CONFIG_VHOST_VSOCK=m
+
+# VirtioFS (required for Android filesystem sharing)
+CONFIG_VIRTIO_FS=y
+
+# Virtio GPU
+CONFIG_DRM_VIRTIO_GPU=y
+
+# Other virtio options
+CONFIG_VIRTIO_INPUT=y
+CONFIG_VIRTIO_MMIO=y
+CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y

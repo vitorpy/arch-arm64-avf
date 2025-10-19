@@ -12,6 +12,9 @@ pkgbuilds/*/*.tar.gz
 pkgbuilds/*/*.tar.xz
 pkgbuilds/*/*.tar.zst
 
+# Kernel config base file (generated, not tracked)
+pkgbuilds/linux-avf/config.base
+
 # Downloaded sources (except submodules)
 *.tar.gz
 *.tar.xz
