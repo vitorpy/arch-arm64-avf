@@ -40,6 +40,7 @@ build() {
     cmake -B build-lws -S libwebsockets \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DLWS_WITH_LIBUV=ON \
         -DLWS_WITH_MBEDTLS=OFF \
         -DLWS_WITH_OPENSSL=ON \

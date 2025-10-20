@@ -20,7 +20,7 @@ makedepends=('acl' 'cryptsetup' 'docbook-xsl' 'gperf' 'lz4' 'xz' 'pam' 'libelf'
              'shadow' 'git' 'meson' 'libseccomp' 'pcre2' 'audit' 'kexec-tools'
              'libxkbcommon' 'bash-completion' 'p11-kit' 'systemd' 'rsync'
              'bpf' 'libbpf' 'clang' 'llvm' 'curl' 'gnutls' 'python-pyelftools'
-             'libpwquality' 'tpm2-tss' 'python-pefile')
+             'libpwquality' 'tpm2-tss' 'python-pefile' 'qrencode')
 provides=('nss-myhostname' "systemd-tools=$pkgver" "udev=$pkgver"
           "systemd=$pkgver" "systemd-sysvcompat=$pkgver" "systemd-resolvconf=$pkgver")
 conflicts=('nss-myhostname' 'systemd-tools' 'udev' 'systemd' 'systemd-sysvcompat' 'systemd-resolvconf')

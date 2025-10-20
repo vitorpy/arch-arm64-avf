@@ -256,7 +256,7 @@ jobs:
             sudo arch-chroot /chroot pacman-key --init
             sudo arch-chroot /chroot pacman-key --populate archlinuxarm
             sudo arch-chroot /chroot pacman -Syu --noconfirm
-            sudo arch-chroot /chroot pacman -S --noconfirm base-devel git meson ninja gperf acl cryptsetup docbook-xsl lz4 xz pam libelf intltool iptables kmod libcap libidn2 libgcrypt libmicrohttpd libxcrypt libxslt util-linux linux-api-headers python-jinja python-lxml quota-tools shadow libseccomp pcre2 audit kexec-tools libxkbcommon bash-completion p11-kit systemd rsync bpf libbpf clang llvm curl gnutls python-pyelftools libpwquality tpm2-tss python-pefile
+            sudo arch-chroot /chroot pacman -S --noconfirm base-devel git meson ninja gperf acl cryptsetup docbook-xsl lz4 xz pam libelf intltool iptables kmod libcap libidn2 libgcrypt libmicrohttpd libxcrypt libxslt util-linux linux-api-headers python-jinja python-lxml quota-tools shadow libseccomp pcre2 audit kexec-tools libxkbcommon bash-completion p11-kit systemd rsync bpf libbpf clang llvm curl gnutls python-pyelftools libpwquality tpm2-tss python-pefile qrencode
             echo "Caching chroot..."
             sudo tar -cf /tmp/chroot-cache.tar.zst -C / chroot
           fi
