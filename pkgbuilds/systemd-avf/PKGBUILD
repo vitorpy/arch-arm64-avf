@@ -77,6 +77,13 @@ build() {
         -Dpcre2=true
         -Dglib=false
         -Ddbus=true
+        -Dlibfido2=disabled
+        -Dhomed=disabled
+        -Dimportd=disabled
+        -Drepart=disabled
+        -Dsysupdate=disabled
+        -Dukify=disabled
+        -Dbootloader=disabled
         -Ddefault-dnssec=allow-downgrade
         -Ddefault-dns-over-tls=no
         -Ddefault-mdns=yes
