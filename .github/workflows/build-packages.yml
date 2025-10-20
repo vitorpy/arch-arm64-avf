@@ -35,26 +35,46 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
+      - name: Cache Arch Linux ARM chroot
+        id: cache-chroot
+        uses: actions/cache@v4
+        with:
+          path: /tmp/chroot-cache.tar.zst
+          key: archlinuxarm-chroot-rust-${{ hashFiles('.github/workflows/build-packages.yml') }}
+          restore-keys: |
+            archlinuxarm-chroot-rust-
+
       - name: Setup Arch Linux ARM chroot
         run: |
-          # Download and extract Arch Linux ARM bootstrap
-          wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
-          sudo mkdir -p /chroot
-          sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
+          if [ -f /tmp/chroot-cache.tar.zst ]; then
+            echo "Restoring chroot from cache..."
+            sudo mkdir -p /chroot
+            sudo tar -xf /tmp/chroot-cache.tar.zst -C /
+          else
+            echo "Setting up new chroot..."
+            # Download and extract Arch Linux ARM bootstrap
+            wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
+            sudo mkdir -p /chroot
+            sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
 
-          # Disable CheckSpace in pacman (GitHub Actions limitation)
-          sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
+            # Disable CheckSpace in pacman (GitHub Actions limitation)
+            sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
 
-          # Initialize and upgrade system
-          sudo arch-chroot /chroot pacman-key --init
-          sudo arch-chroot /chroot pacman-key --populate archlinuxarm
-          sudo arch-chroot /chroot pacman -Syu --noconfirm
+            # Initialize and upgrade system
+            sudo arch-chroot /chroot pacman-key --init
+            sudo arch-chroot /chroot pacman-key --populate archlinuxarm
+            sudo arch-chroot /chroot pacman -Syu --noconfirm
 
-          # Install build dependencies
-          sudo arch-chroot /chroot pacman -S --noconfirm base-devel git rust cargo protobuf bcc
+            # Install build dependencies
+            sudo arch-chroot /chroot pacman -S --noconfirm base-devel git rust cargo protobuf bcc
 
-          # Create builder user and build directory
-          sudo arch-chroot /chroot useradd -m builder
+            # Cache the chroot for next time
+            echo "Caching chroot..."
+            sudo tar -cf /tmp/chroot-cache.tar.zst -C / chroot
+          fi
+
+          # Create builder user and build directory (always needed)
+          sudo arch-chroot /chroot useradd -m builder 2>/dev/null || true
           sudo mkdir -p /chroot/build
           sudo arch-chroot /chroot chown -R builder:builder /build
 
@@ -94,17 +114,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
+      - name: Cache Arch Linux ARM chroot
+        id: cache-chroot
+        uses: actions/cache@v4
+        with:
+          path: /tmp/chroot-cache.tar.zst
+          key: archlinuxarm-chroot-ttyd-${{ hashFiles('.github/workflows/build-packages.yml') }}
+          restore-keys: |
+            archlinuxarm-chroot-ttyd-
+
       - name: Setup Arch Linux ARM chroot
         run: |
-          wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
-          sudo mkdir -p /chroot
-          sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
-          sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
-          sudo arch-chroot /chroot pacman-key --init
-          sudo arch-chroot /chroot pacman-key --populate archlinuxarm
-          sudo arch-chroot /chroot pacman -Syu --noconfirm
-          sudo arch-chroot /chroot pacman -S --noconfirm base-devel git cmake json-c openssl zlib vim wget libuv libwebsockets
-          sudo arch-chroot /chroot useradd -m builder
+          if [ -f /tmp/chroot-cache.tar.zst ]; then
+            echo "Restoring chroot from cache..."
+            sudo mkdir -p /chroot
+            sudo tar -xf /tmp/chroot-cache.tar.zst -C /
+          else
+            echo "Setting up new chroot..."
+            wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
+            sudo mkdir -p /chroot
+            sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
+            sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
+            sudo arch-chroot /chroot pacman-key --init
+            sudo arch-chroot /chroot pacman-key --populate archlinuxarm
+            sudo arch-chroot /chroot pacman -Syu --noconfirm
+            sudo arch-chroot /chroot pacman -S --noconfirm base-devel git cmake json-c openssl zlib vim wget libuv libwebsockets
+            echo "Caching chroot..."
+            sudo tar -cf /tmp/chroot-cache.tar.zst -C / chroot
+          fi
+          sudo arch-chroot /chroot useradd -m builder 2>/dev/null || true
           sudo mkdir -p /chroot/build
 
       - name: Build avf-ttyd
@@ -135,17 +173,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
+      - name: Cache Arch Linux ARM chroot
+        id: cache-chroot
+        uses: actions/cache@v4
+        with:
+          path: /tmp/chroot-cache.tar.zst
+          key: archlinuxarm-chroot-kernel-${{ hashFiles('.github/workflows/build-packages.yml') }}
+          restore-keys: |
+            archlinuxarm-chroot-kernel-
+
       - name: Setup Arch Linux ARM chroot
         run: |
-          wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
-          sudo mkdir -p /chroot
-          sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
-          sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
-          sudo arch-chroot /chroot pacman-key --init
-          sudo arch-chroot /chroot pacman-key --populate archlinuxarm
-          sudo arch-chroot /chroot pacman -Syu --noconfirm
-          sudo arch-chroot /chroot pacman -S --noconfirm base-devel git bc kmod inetutils cpio perl tar xz gettext libelf pahole python
-          sudo arch-chroot /chroot useradd -m builder
+          if [ -f /tmp/chroot-cache.tar.zst ]; then
+            echo "Restoring chroot from cache..."
+            sudo mkdir -p /chroot
+            sudo tar -xf /tmp/chroot-cache.tar.zst -C /
+          else
+            echo "Setting up new chroot..."
+            wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
+            sudo mkdir -p /chroot
+            sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
+            sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
+            sudo arch-chroot /chroot pacman-key --init
+            sudo arch-chroot /chroot pacman-key --populate archlinuxarm
+            sudo arch-chroot /chroot pacman -Syu --noconfirm
+            sudo arch-chroot /chroot pacman -S --noconfirm base-devel git bc kmod inetutils cpio perl tar xz gettext libelf pahole python
+            echo "Caching chroot..."
+            sudo tar -cf /tmp/chroot-cache.tar.zst -C / chroot
+          fi
+          sudo arch-chroot /chroot useradd -m builder 2>/dev/null || true
 
       - name: Build linux-avf
         run: |
@@ -176,17 +232,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
+      - name: Cache Arch Linux ARM chroot
+        id: cache-chroot
+        uses: actions/cache@v4
+        with:
+          path: /tmp/chroot-cache.tar.zst
+          key: archlinuxarm-chroot-systemd-${{ hashFiles('.github/workflows/build-packages.yml') }}
+          restore-keys: |
+            archlinuxarm-chroot-systemd-
+
       - name: Setup Arch Linux ARM chroot
         run: |
-          wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
-          sudo mkdir -p /chroot
-          sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
-          sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
-          sudo arch-chroot /chroot pacman-key --init
-          sudo arch-chroot /chroot pacman-key --populate archlinuxarm
-          sudo arch-chroot /chroot pacman -Syu --noconfirm
-          sudo arch-chroot /chroot pacman -S --noconfirm base-devel git meson ninja gperf acl cryptsetup docbook-xsl lz4 xz pam libelf intltool iptables kmod libcap libidn2 libgcrypt libmicrohttpd libxcrypt libxslt util-linux linux-api-headers python-jinja python-lxml quota-tools shadow libseccomp pcre2 audit kexec-tools libxkbcommon bash-completion p11-kit systemd rsync bpf libbpf clang llvm curl gnutls python-pyelftools libpwquality tpm2-tss python-pefile
-          sudo arch-chroot /chroot useradd -m builder
+          if [ -f /tmp/chroot-cache.tar.zst ]; then
+            echo "Restoring chroot from cache..."
+            sudo mkdir -p /chroot
+            sudo tar -xf /tmp/chroot-cache.tar.zst -C /
+          else
+            echo "Setting up new chroot..."
+            wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
+            sudo mkdir -p /chroot
+            sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
+            sudo sed -i 's/^CheckSpace/#CheckSpace/' /chroot/etc/pacman.conf
+            sudo arch-chroot /chroot pacman-key --init
+            sudo arch-chroot /chroot pacman-key --populate archlinuxarm
+            sudo arch-chroot /chroot pacman -Syu --noconfirm
+            sudo arch-chroot /chroot pacman -S --noconfirm base-devel git meson ninja gperf acl cryptsetup docbook-xsl lz4 xz pam libelf intltool iptables kmod libcap libidn2 libgcrypt libmicrohttpd libxcrypt libxslt util-linux linux-api-headers python-jinja python-lxml quota-tools shadow libseccomp pcre2 audit kexec-tools libxkbcommon bash-completion p11-kit systemd rsync bpf libbpf clang llvm curl gnutls python-pyelftools libpwquality tpm2-tss python-pefile
+            echo "Caching chroot..."
+            sudo tar -cf /tmp/chroot-cache.tar.zst -C / chroot
+          fi
+          sudo arch-chroot /chroot useradd -m builder 2>/dev/null || true
           sudo mkdir -p /chroot/build
 
       - name: Build systemd-avf
