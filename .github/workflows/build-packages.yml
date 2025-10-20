@@ -92,13 +92,13 @@ jobs:
       - name: Copy built package out of chroot
         run: |
           ls -la /chroot/build/
-          sudo find /chroot/build -name "*.pkg.tar.zst" -exec cp {} pkgbuilds/${{ matrix.package }}/ \;
+          sudo find /chroot/build -name "*.pkg.tar.*" -exec cp {} pkgbuilds/${{ matrix.package }}/ \;
 
       - name: Upload built package
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package }}-package
-          path: pkgbuilds/${{ matrix.package }}/*.pkg.tar.zst
+          path: pkgbuilds/${{ matrix.package }}/*.pkg.tar.*
           retention-days: 30
 
   build-ttyd:
@@ -150,13 +150,13 @@ jobs:
           sudo cp -r pkgbuilds/avf-ttyd/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
-          sudo find /chroot/build -name "*.pkg.tar.zst" -exec cp {} pkgbuilds/avf-ttyd/ \;
+          sudo find /chroot/build -name "*.pkg.tar.*" -exec cp {} pkgbuilds/avf-ttyd/ \;
 
       - name: Upload built package
         uses: actions/upload-artifact@v4
         with:
           name: avf-ttyd-package
-          path: pkgbuilds/avf-ttyd/*.pkg.tar.zst
+          path: pkgbuilds/avf-ttyd/*.pkg.tar.*
           retention-days: 30
 
   build-kernel:
@@ -209,13 +209,13 @@ jobs:
           sudo cp -r pkgbuilds/linux-avf/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm --skippgpcheck"
-          sudo find /chroot/build -name "*.pkg.tar.zst" -exec cp {} pkgbuilds/linux-avf/ \;
+          sudo find /chroot/build -name "*.pkg.tar.*" -exec cp {} pkgbuilds/linux-avf/ \;
 
       - name: Upload built package
         uses: actions/upload-artifact@v4
         with:
           name: linux-avf-package
-          path: pkgbuilds/linux-avf/*.pkg.tar.zst
+          path: pkgbuilds/linux-avf/*.pkg.tar.*
           retention-days: 30
 
   build-systemd:
@@ -268,13 +268,13 @@ jobs:
           sudo cp -r pkgbuilds/systemd-avf/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
-          sudo find /chroot/build -name "*.pkg.tar.zst" -exec cp {} pkgbuilds/systemd-avf/ \;
+          sudo find /chroot/build -name "*.pkg.tar.*" -exec cp {} pkgbuilds/systemd-avf/ \;
 
       - name: Upload built package
         uses: actions/upload-artifact@v4
         with:
           name: systemd-avf-package
-          path: pkgbuilds/systemd-avf/*.pkg.tar.zst
+          path: pkgbuilds/systemd-avf/*.pkg.tar.*
           retention-days: 30
 
   create-repository:
@@ -298,7 +298,7 @@ jobs:
           mkdir -p repo/aarch64
 
           # Move all packages to repo directory
-          find built-packages -name "*.pkg.tar.zst" -exec cp {} repo/aarch64/ \;
+          find built-packages -name "*.pkg.tar.*" -exec cp {} repo/aarch64/ \;
 
           # List packages
           echo "Built packages:"
@@ -310,7 +310,7 @@ jobs:
           sudo mkdir -p /chroot
           sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
           sudo cp -r repo /chroot/
-          sudo arch-chroot /chroot bash -c 'cd /repo/aarch64 && repo-add aarch64.db.tar.gz *.pkg.tar.zst'
+          sudo arch-chroot /chroot bash -c 'cd /repo/aarch64 && repo-add aarch64.db.tar.gz *.pkg.tar.*'
           sudo cp -r /chroot/repo/* repo/
 
       - name: Upload repository
@@ -327,4 +327,4 @@ jobs:
           echo "Built packages from commit: ${{ github.sha }}" >> repo/README.md
           echo "" >> repo/README.md
           echo "## Packages" >> repo/README.md
-          ls -1 repo/aarch64/*.pkg.tar.zst | xargs -n1 basename >> repo/README.md
+          ls -1 repo/aarch64/*.pkg.tar.* | xargs -n1 basename >> repo/README.md

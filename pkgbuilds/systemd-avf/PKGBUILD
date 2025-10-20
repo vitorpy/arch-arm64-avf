@@ -119,16 +119,6 @@ build() {
         -Dman=false
         -Dhtml=false
         -Dtranslations=true
-        -Dnologin-path=/usr/bin/nologin
-        -Dhalt-path=/usr/bin/halt
-        -Dreboot-path=/usr/bin/reboot
-        -Dpoweroff-path=/usr/bin/poweroff
-        -Dshutdown-path=/usr/bin/shutdown
-        -Dtelinit-path=/usr/bin/telinit
-        -Drc-local=/etc/rc.local
-        -Dloadkeys-path=/usr/bin/loadkeys
-        -Dsetfont-path=/usr/bin/setfont
-        -Ddebug-shell=/usr/bin/bash
         -Dfallback-hostname='archarm'
         -Ddefault-hierarchy=unified
     )
