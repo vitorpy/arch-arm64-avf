@@ -39,7 +39,7 @@ jobs:
             bash -c '
               # Update system and install base-devel
               pacman -Syu --noconfirm
-              pacman -S --noconfirm base-devel git rust cargo protobuf
+              pacman -S --noconfirm base-devel git rust cargo protobuf bcc
 
               # Create a non-root user for building
               useradd -m builder
