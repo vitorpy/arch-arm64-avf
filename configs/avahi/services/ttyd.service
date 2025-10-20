@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<!--
+  Avahi service definition for ttyd
+  This publishes the ttyd terminal service via mDNS
+  so that Android's Terminal app can discover it
+-->
+<service-group>
+  <name replace-wildcards="yes">Terminal on %h</name>
+  <service>
+    <type>_http._tcp</type>
+    <port>7681</port>
+    <txt-record>path=/</txt-record>
+  </service>
+</service-group>

@@ -1,0 +1,42 @@
+{
+  "name": "archarm",
+  "disks": [
+    {
+      "partitions": [
+        {
+          "label": "ESP",
+          "path": "$PAYLOAD_DIR/efi_part",
+          "writable": true,
+          "guid": "{EFI_PART_GUID}"
+        },
+        {
+          "label": "archarm",
+          "path": "$PAYLOAD_DIR/root_part",
+          "writable": true,
+          "guid": "{ROOT_PART_GUID}"
+        }
+      ],
+      "writable": true
+    }
+  ],
+  "sharedPath": [
+    {
+      "sharedPath": "/storage/emulated"
+    },
+    {
+      "sharedPath": "$APP_DATA_DIR/files"
+    }
+  ],
+  "protected": false,
+  "cpu_topology": "match_host",
+  "platform_version": "~1.0",
+  "memory_mib": 4096,
+  "debuggable": true,
+  "console_out": true,
+  "console_input_device": "ttyS0",
+  "network": true,
+  "auto_memory_balloon": true,
+  "gpu": {
+    "backend": "2d"
+  }
+}

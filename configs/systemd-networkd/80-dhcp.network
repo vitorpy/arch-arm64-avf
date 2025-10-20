@@ -1,0 +1,15 @@
+[Match]
+# Match all ethernet interfaces
+Name=en*
+
+[Network]
+# Use DHCP for network configuration (provided by AVF)
+DHCP=yes
+
+# Disable IPv6 Router Advertisement (IPv6 can cause issues with AVF)
+IPv6AcceptRA=no
+
+[DHCPv4]
+UseDNS=yes
+UseNTP=yes
+UseHostname=no

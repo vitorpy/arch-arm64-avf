@@ -1,0 +1,25 @@
+[Unit]
+Description=AVF Forwarder Guest Launcher
+Documentation=https://android.googlesource.com/platform/packages/modules/Virtualization/
+After=network-online.target network.target mnt-internal.mount
+Wants=network-online.target
+RequiresMountsFor=/mnt/internal
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/forwarder_guest_launcher --grpc-port-file /mnt/internal/debian_service_port
+Restart=on-failure
+RestartSec=1
+StandardOutput=journal
+StandardError=journal
+
+# Run as root (required for BPF operations)
+User=root
+Group=root
+
+# Security settings
+NoNewPrivileges=false
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

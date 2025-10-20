@@ -1,0 +1,34 @@
+[Unit]
+Description=ttyd - Terminal Server for AVF
+Documentation=man:ttyd(1)
+After=network-online.target network.target mnt-internal.mount
+Wants=network-online.target
+RequiresMountsFor=/mnt/internal
+
+[Service]
+Type=simple
+# SSL with client certificate authentication
+# Auto-login as droid user
+# Port 7681 for Terminal app discovery
+ExecStart=/usr/bin/ttyd \
+    --port 7681 \
+    --ssl \
+    --ssl-ca /mnt/internal/ca.crt \
+    --ssl-cert /mnt/internal/ca.crt \
+    --ssl-key /mnt/internal/ca.key \
+    --writable \
+    login -f droid
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/mnt/internal
+
+[Install]
+WantedBy=multi-user.target

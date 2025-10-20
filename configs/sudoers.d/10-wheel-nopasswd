@@ -1,0 +1,5 @@
+# Allow members of group wheel to execute any command without password
+# This file should be installed to /etc/sudoers.d/10-wheel-nopasswd
+# with permissions 0440
+
+%wheel ALL=(ALL:ALL) NOPASSWD: ALL

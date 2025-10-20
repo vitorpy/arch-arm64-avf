@@ -1,0 +1,16 @@
+# /etc/fstab: static file system information for Arch Linux ARM AVF
+#
+# <device>              <mount point>  <type>     <options>                      <dump> <pass>
+
+# Root filesystem - auto-resize on first boot
+LABEL=archarm           /              ext4       defaults,noatime               0      1
+
+# EFI System Partition for systemd-boot
+LABEL=ESP               /boot          vfat       defaults,noatime               0      2
+
+# AVF virtiofs mounts
+# Internal AVF communication (certificates, gRPC port file)
+internal                /mnt/internal  virtiofs   defaults,nofail                0      0
+
+# Android shared storage (/storage/emulated)
+android                 /mnt/shared    virtiofs   defaults,nofail                0      0
