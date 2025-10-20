@@ -13,8 +13,10 @@ source=("avf::git+https://android.googlesource.com/platform/packages/modules/Vir
 sha256sums=('SKIP'
             'SKIP')
 
+_srcdir="forwarder_guest_launcher"
+
 prepare() {
-    cd "$srcdir/avf/guest/$pkgname"
+    cd "$srcdir/avf/guest/$_srcdir"
 
     # Apply patch for TCP state monitoring
     patch -p1 < "$srcdir/guest-tcpstates.patch"
@@ -27,22 +29,19 @@ prepare() {
 }
 
 build() {
-    cd "$srcdir/avf/guest/$pkgname"
+    cd "$srcdir/avf/guest/$_srcdir"
 
     export RUSTFLAGS="-C linker=gcc"
     cargo build --release --locked
 }
 
 check() {
-    cd "$srcdir/avf/guest/$pkgname"
+    cd "$srcdir/avf/guest/$_srcdir"
     cargo test --release --locked
 }
 
 package() {
-    cd "$srcdir/avf/guest/$pkgname"
+    cd "$srcdir/avf/guest/$_srcdir"
 
-    install -Dm755 "target/release/$pkgname" "$pkgdir/usr/bin/$pkgname"
-
-    # Install license
-    install -Dm644 "$srcdir/avf/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm755 "target/release/$_srcdir" "$pkgdir/usr/bin/$pkgname"
 }
