@@ -1,0 +1,215 @@
+name: Build Packages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'pkgbuilds/**'
+      - '.github/workflows/build-packages.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'pkgbuilds/**'
+      - '.github/workflows/build-packages.yml'
+  workflow_dispatch:
+
+jobs:
+  build-rust-services:
+    name: Build Rust AVF Services
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - avf-forwarder-guest
+          - avf-forwarder-guest-launcher
+          - avf-shutdown-runner
+          - avf-storage-balloon-agent
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.package }} in ARM64 container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/pkgbuilds/${{ matrix.package }} \
+            archlinux:latest \
+            bash -c '
+              # Update system and install base-devel
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm base-devel git rust cargo protobuf
+
+              # Create a non-root user for building
+              useradd -m builder
+              chown -R builder:builder /workspace
+
+              # Build the package as builder user
+              su - builder -c "cd /workspace/pkgbuilds/${{ matrix.package }} && makepkg -s --noconfirm"
+            '
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.package }}-package
+          path: pkgbuilds/${{ matrix.package }}/*.pkg.tar.zst
+          retention-days: 30
+
+  build-ttyd:
+    name: Build avf-ttyd
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build avf-ttyd in ARM64 container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/pkgbuilds/avf-ttyd \
+            archlinux:latest \
+            bash -c '
+              # Update system and install dependencies
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm base-devel git cmake json-c openssl zlib vim wget
+
+              # Create a non-root user for building
+              useradd -m builder
+              chown -R builder:builder /workspace
+
+              # Build the package as builder user
+              su - builder -c "cd /workspace/pkgbuilds/avf-ttyd && makepkg -s --noconfirm"
+            '
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v4
+        with:
+          name: avf-ttyd-package
+          path: pkgbuilds/avf-ttyd/*.pkg.tar.zst
+          retention-days: 30
+
+  build-kernel:
+    name: Build linux-avf kernel
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build linux-avf in ARM64 container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/pkgbuilds/linux-avf \
+            archlinux:latest \
+            bash -c '
+              # Update system and install dependencies
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm base-devel git bc kmod inetutils cpio perl tar xz
+
+              # Create a non-root user for building
+              useradd -m builder
+              chown -R builder:builder /workspace
+
+              # Build the package as builder user
+              # Note: Kernel builds take a long time!
+              su - builder -c "cd /workspace/pkgbuilds/linux-avf && makepkg -s --noconfirm"
+            '
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-avf-package
+          path: pkgbuilds/linux-avf/*.pkg.tar.zst
+          retention-days: 30
+
+  build-systemd:
+    name: Build systemd-avf
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build systemd-avf in ARM64 container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/pkgbuilds/systemd-avf \
+            archlinux:latest \
+            bash -c '
+              # Update system and install dependencies
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm base-devel git meson ninja gperf
+
+              # Create a non-root user for building
+              useradd -m builder
+              chown -R builder:builder /workspace
+
+              # Build the package as builder user
+              su - builder -c "cd /workspace/pkgbuilds/systemd-avf && makepkg -s --noconfirm"
+            '
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v4
+        with:
+          name: systemd-avf-package
+          path: pkgbuilds/systemd-avf/*.pkg.tar.zst
+          retention-days: 30
+
+  create-repository:
+    name: Create Package Repository
+    runs-on: ubuntu-24.04-arm
+    needs: [build-rust-services, build-ttyd, build-kernel, build-systemd]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all packages
+        uses: actions/download-artifact@v4
+        with:
+          path: built-packages
+          pattern: '*-package'
+
+      - name: Set up package repository
+        run: |
+          mkdir -p repo/aarch64
+
+          # Move all packages to repo directory
+          find built-packages -name "*.pkg.tar.zst" -exec cp {} repo/aarch64/ \;
+
+          # List packages
+          echo "Built packages:"
+          ls -lh repo/aarch64/
+
+      - name: Create repository database
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/repo:/repo \
+            archlinux:latest \
+            bash -c '
+              cd /repo/aarch64
+              repo-add aarch64.db.tar.gz *.pkg.tar.zst
+            '
+
+      - name: Upload repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-avf-repository
+          path: repo/
+          retention-days: 90
+
+      - name: Generate repository info
+        run: |
+          echo "# Package Repository" > repo/README.md
+          echo "" >> repo/README.md
+          echo "Built packages from commit: ${{ github.sha }}" >> repo/README.md
+          echo "" >> repo/README.md
+          echo "## Packages" >> repo/README.md
+          ls -1 repo/aarch64/*.pkg.tar.zst | xargs -n1 basename >> repo/README.md
