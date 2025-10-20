@@ -2,7 +2,7 @@
 # Based on: systemd PKGBUILD from Arch Linux ARM
 
 pkgname=systemd-avf
-pkgver=256.7
+pkgver=256
 pkgrel=1
 pkgdesc="systemd patched for Android Virtualization Framework (AVF)"
 arch=('aarch64')

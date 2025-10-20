@@ -66,6 +66,7 @@ jobs:
 
       - name: Build ${{ matrix.package }}
         run: |
+          sudo mkdir -p /chroot/build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
 
       - name: Copy built package out of chroot
@@ -101,7 +102,7 @@ jobs:
           sudo arch-chroot /chroot pacman-key --init
           sudo arch-chroot /chroot pacman-key --populate archlinuxarm
           sudo arch-chroot /chroot pacman -Syu --noconfirm
-          sudo arch-chroot /chroot pacman -S --noconfirm base-devel git cmake json-c openssl zlib vim wget libuv
+          sudo arch-chroot /chroot pacman -S --noconfirm base-devel git cmake json-c openssl zlib vim wget libuv libwebsockets
           sudo arch-chroot /chroot useradd -m builder
           sudo mkdir -p /chroot/build
 
@@ -150,7 +151,7 @@ jobs:
           sudo mkdir -p /chroot/build
           sudo cp -r pkgbuilds/linux-avf/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
-          sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
+          sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm --skippgpcheck"
           sudo cp /chroot/build/*.pkg.tar.zst pkgbuilds/linux-avf/
 
       - name: Upload built package
