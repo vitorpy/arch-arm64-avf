@@ -53,8 +53,9 @@ jobs:
           # Install build dependencies
           sudo arch-chroot /chroot pacman -S --noconfirm base-devel git rust cargo protobuf bcc
 
-          # Create builder user
+          # Create builder user and build directory
           sudo arch-chroot /chroot useradd -m builder
+          sudo mkdir -p /chroot/build
           sudo arch-chroot /chroot chown -R builder:builder /build
 
       - name: Copy PKGBUILD to chroot
@@ -102,10 +103,10 @@ jobs:
           sudo arch-chroot /chroot pacman -Syu --noconfirm
           sudo arch-chroot /chroot pacman -S --noconfirm base-devel git cmake json-c openssl zlib vim wget
           sudo arch-chroot /chroot useradd -m builder
+          sudo mkdir -p /chroot/build
 
       - name: Build avf-ttyd
         run: |
-          sudo mkdir -p /chroot/build
           sudo cp -r pkgbuilds/avf-ttyd/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
@@ -184,10 +185,10 @@ jobs:
           sudo arch-chroot /chroot pacman -Syu --noconfirm
           sudo arch-chroot /chroot pacman -S --noconfirm base-devel git meson ninja gperf
           sudo arch-chroot /chroot useradd -m builder
+          sudo mkdir -p /chroot/build
 
       - name: Build systemd-avf
         run: |
-          sudo mkdir -p /chroot/build
           sudo cp -r pkgbuilds/systemd-avf/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
