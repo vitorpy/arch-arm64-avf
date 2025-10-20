@@ -328,3 +328,85 @@ jobs:
           echo "" >> repo/README.md
           echo "## Packages" >> repo/README.md
           ls -1 repo/aarch64/*.pkg.tar.* | xargs -n1 basename >> repo/README.md
+
+  build-image:
+    name: Build Bootable Image
+    runs-on: ubuntu-24.04-arm
+    needs: [build-rust-services, build-ttyd, build-kernel, build-systemd]
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install required tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y arch-install-scripts parted dosfstools e2fsprogs rsync pigz
+
+      - name: Download all packages
+        uses: actions/download-artifact@v4
+        with:
+          path: built-packages
+          pattern: '*-package'
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          find built-packages -type f -name "*.pkg.tar.*" -ls
+
+      - name: Prepare package repository
+        run: |
+          ./scripts/05-download-packages.sh
+
+      - name: Build root filesystem
+        run: |
+          ./scripts/10-build-rootfs.sh
+
+      - name: Install packages
+        run: |
+          ./scripts/20-install-packages.sh
+
+      - name: Configure system
+        run: |
+          ./scripts/30-configure-system.sh
+
+      - name: Create disk image
+        run: |
+          ./scripts/40-create-disk-image.sh
+
+      - name: Package for AVF
+        run: |
+          ./scripts/50-package-image.sh
+
+      - name: Upload bootable image
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-avf-image
+          path: build/image-*.tar.gz*
+          retention-days: 90
+
+      - name: Generate release info
+        run: |
+          BUILD_ID=$(cat build/build_id)
+          IMAGE_FILE=$(ls build/image-*.tar.gz)
+          IMAGE_SIZE=$(du -h "${IMAGE_FILE}" | cut -f1)
+          echo "## Arch Linux ARM for AVF" > build/RELEASE_INFO.md
+          echo "" >> build/RELEASE_INFO.md
+          echo "**Build ID**: ${BUILD_ID}" >> build/RELEASE_INFO.md
+          echo "**Build Date**: $(date)" >> build/RELEASE_INFO.md
+          echo "**Commit**: ${{ github.sha }}" >> build/RELEASE_INFO.md
+          echo "**Size**: ${IMAGE_SIZE}" >> build/RELEASE_INFO.md
+          echo "" >> build/RELEASE_INFO.md
+          echo "### Installation" >> build/RELEASE_INFO.md
+          echo '```bash' >> build/RELEASE_INFO.md
+          echo "adb push ${IMAGE_FILE##*/} /sdcard/linux/images.tar.gz" >> build/RELEASE_INFO.md
+          echo '```' >> build/RELEASE_INFO.md
+
+      - name: Upload release info
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-info
+          path: build/RELEASE_INFO.md
+          retention-days: 90
