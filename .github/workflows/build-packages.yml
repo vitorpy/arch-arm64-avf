@@ -337,7 +337,7 @@ jobs:
   build-image:
     name: Build Bootable Image
     runs-on: ubuntu-24.04-arm
-    needs: [build-rust-services, build-ttyd, build-kernel, build-systemd]
+    needs: [create-repository]
     if: github.ref == 'refs/heads/main'
     timeout-minutes: 60
 
@@ -350,20 +350,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts parted dosfstools e2fsprogs rsync pigz
 
-      - name: Download all packages
+      - name: Cache Arch Linux ARM rootfs
+        id: cache-rootfs
+        uses: actions/cache@v4
+        with:
+          path: /tmp/rootfs-cache.tar.zst
+          key: archlinuxarm-rootfs-${{ hashFiles('scripts/10-build-rootfs.sh') }}
+
+      - name: Download package repository
         uses: actions/download-artifact@v4
         with:
-          path: built-packages
-          pattern: '*-package'
+          name: arch-avf-repository
+          path: repo
 
-      - name: List downloaded artifacts
+      - name: List repository contents
         run: |
-          echo "Downloaded artifacts:"
-          find built-packages -type f -name "*.pkg.tar.*" -ls
-
-      - name: Prepare package repository
-        run: |
-          ./scripts/05-download-packages.sh
+          echo "Package repository contents:"
+          ls -lh repo/aarch64/
 
       - name: Build root filesystem
         run: |
