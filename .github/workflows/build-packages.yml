@@ -287,6 +287,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install arch-install-scripts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y arch-install-scripts
+
       - name: Download all packages
         uses: actions/download-artifact@v4
         with:
