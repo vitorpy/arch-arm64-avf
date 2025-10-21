@@ -315,7 +315,7 @@ jobs:
           sudo mkdir -p /chroot
           sudo tar -xzf ArchLinuxARM-aarch64-latest.tar.gz -C /chroot
           sudo cp -r repo /chroot/
-          sudo arch-chroot /chroot bash -c 'cd /repo/aarch64 && repo-add aarch64.db.tar.gz *.pkg.tar.*'
+          sudo arch-chroot /chroot bash -c 'cd /repo/aarch64 && repo-add avf.db.tar.gz *.pkg.tar.*'
           sudo cp -r /chroot/repo/* repo/
 
       - name: Upload repository
