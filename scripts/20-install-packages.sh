@@ -93,8 +93,8 @@ AVF_PKGS=(
     avf-ttyd
 )
 
-# Install AVF packages
-sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm --overwrite '*' "${AVF_PKGS[@]}" || {
+# Install AVF packages (--ask 4 auto-removes conflicting packages)
+sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm --overwrite '*' --ask 4 "${AVF_PKGS[@]}" || {
     echo -e "${YELLOW}WARNING: Some AVF packages failed to install${NC}"
 }
 
