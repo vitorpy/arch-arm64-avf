@@ -48,6 +48,10 @@ fi
 echo "Extracting base system..."
 sudo tar -xpf "${ARCH_ARM_TARBALL}" -C "${ROOTFS}"
 
+# Disable CheckSpace in pacman (GitHub Actions/non-mount limitation)
+echo "Configuring pacman..."
+sudo sed -i 's/^CheckSpace/#CheckSpace/' "${ROOTFS}/etc/pacman.conf"
+
 # Configure pacman to use ARM repos
 echo "Configuring pacman mirrors..."
 sudo tee "${ROOTFS}/etc/pacman.d/mirrorlist" > /dev/null <<EOF
