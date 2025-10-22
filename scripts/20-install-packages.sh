@@ -82,7 +82,7 @@ ESSENTIAL_PKGS=(
     zstd
 )
 
-sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm --needed "${ESSENTIAL_PKGS[@]}"
+sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm --needed --overwrite '*' "${ESSENTIAL_PKGS[@]}"
 
 # AVF-specific packages (if available in local repo)
 echo "Installing AVF packages..."
