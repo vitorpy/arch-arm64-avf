@@ -52,9 +52,6 @@ ESSENTIAL_PKGS=(
     base
     base-devel
 
-    # Kernel (will be replaced by linux-avf)
-    linux-aarch64
-
     # Boot
     systemd
     systemd-sysvcompat
