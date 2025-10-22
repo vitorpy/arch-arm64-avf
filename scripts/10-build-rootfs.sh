@@ -66,9 +66,9 @@ pacman-key --init
 pacman-key --populate archlinuxarm
 CHROOT
 
-# Update package database
-echo "Updating package database..."
-sudo arch-chroot "${ROOTFS}" pacman -Sy --noconfirm
+# Update package database and upgrade system
+echo "Upgrading system packages..."
+sudo arch-chroot "${ROOTFS}" pacman -Syu --noconfirm
 
 echo ""
 echo -e "${GREEN}=== Root Filesystem Ready ===${NC}"

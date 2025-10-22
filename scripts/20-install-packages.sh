@@ -88,6 +88,7 @@ sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm --needed --overwrite '*' "${E
 echo "Installing AVF packages..."
 AVF_PKGS=(
     linux-avf
+    systemd-avf
     avf-forwarder-guest
     avf-forwarder-guest-launcher
     avf-shutdown-runner
@@ -95,17 +96,10 @@ AVF_PKGS=(
     avf-ttyd
 )
 
-# Install AVF packages if they exist
-for pkg in "${AVF_PKGS[@]}"; do
-    if sudo arch-chroot "${ROOTFS}" pacman -Ss "^${pkg}$" &> /dev/null; then
-        echo "Installing ${pkg}..."
-        sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm "${pkg}" || {
-            echo -e "${YELLOW}WARNING: Failed to install ${pkg}, skipping${NC}"
-        }
-    else
-        echo -e "${YELLOW}WARNING: ${pkg} not found in repositories${NC}"
-    fi
-done
+# Install AVF packages
+sudo arch-chroot "${ROOTFS}" pacman -S --noconfirm --overwrite '*' "${AVF_PKGS[@]}" || {
+    echo -e "${YELLOW}WARNING: Some AVF packages failed to install${NC}"
+}
 
 # Optional packages for development/debugging
 if [[ "${INSTALL_DEV:-no}" == "yes" ]]; then
