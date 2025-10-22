@@ -64,8 +64,6 @@ ESSENTIAL_PKGS=(
     dosfstools
 
     # Network
-    systemd-networkd
-    systemd-resolved
     avahi
     nss-mdns
 
