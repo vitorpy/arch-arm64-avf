@@ -5,11 +5,13 @@ on:
     branches: [ main ]
     paths:
       - 'pkgbuilds/**'
+      - 'scripts/**'
       - '.github/workflows/build-packages.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'pkgbuilds/**'
+      - 'scripts/**'
       - '.github/workflows/build-packages.yml'
   workflow_dispatch:
 
@@ -30,12 +32,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache built package
+        id: cache-package
+        uses: actions/cache@v4
+        with:
+          path: pkgbuilds/${{ matrix.package }}/*.pkg.tar.*
+          key: package-${{ matrix.package }}-${{ hashFiles(format('pkgbuilds/{0}/PKGBUILD', matrix.package)) }}
+
       - name: Install arch-chroot tool
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
       - name: Cache Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         id: cache-chroot
         uses: actions/cache@v4
         with:
@@ -45,6 +56,7 @@ jobs:
             archlinuxarm-chroot-rust-
 
       - name: Setup Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           if [ -f /tmp/chroot-cache.tar.zst ]; then
             echo "Restoring chroot from cache..."
@@ -79,17 +91,20 @@ jobs:
           sudo arch-chroot /chroot chown -R builder:builder /build
 
       - name: Copy PKGBUILD to chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo mkdir -p /chroot/build
           sudo cp -r pkgbuilds/${{ matrix.package }}/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
 
       - name: Build ${{ matrix.package }}
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo mkdir -p /chroot/build
           sudo arch-chroot /chroot su - builder -c "cd /build && makepkg -s --noconfirm"
 
       - name: Copy built package out of chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           ls -la /chroot/build/
           sudo find /chroot/build -name "*.pkg.tar.*" -exec cp {} pkgbuilds/${{ matrix.package }}/ \;
@@ -109,12 +124,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache built package
+        id: cache-package
+        uses: actions/cache@v4
+        with:
+          path: pkgbuilds/avf-ttyd/*.pkg.tar.*
+          key: package-avf-ttyd-${{ hashFiles('pkgbuilds/avf-ttyd/PKGBUILD') }}
+
       - name: Install arch-chroot tool
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
       - name: Cache Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         id: cache-chroot
         uses: actions/cache@v4
         with:
@@ -124,6 +148,7 @@ jobs:
             archlinuxarm-chroot-ttyd-
 
       - name: Setup Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           if [ -f /tmp/chroot-cache.tar.zst ]; then
             echo "Restoring chroot from cache..."
@@ -146,6 +171,7 @@ jobs:
           sudo mkdir -p /chroot/build
 
       - name: Build avf-ttyd
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo cp -r pkgbuilds/avf-ttyd/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
@@ -168,12 +194,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache built packages
+        id: cache-package
+        uses: actions/cache@v4
+        with:
+          path: pkgbuilds/linux-avf/*.pkg.tar.*
+          key: package-linux-avf-${{ hashFiles('pkgbuilds/linux-avf/PKGBUILD', 'pkgbuilds/linux-avf/config') }}
+
       - name: Install arch-chroot tool
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
       - name: Cache Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         id: cache-chroot
         uses: actions/cache@v4
         with:
@@ -183,6 +218,7 @@ jobs:
             archlinuxarm-chroot-kernel-
 
       - name: Setup Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           if [ -f /tmp/chroot-cache.tar.zst ]; then
             echo "Restoring chroot from cache..."
@@ -204,6 +240,7 @@ jobs:
           sudo arch-chroot /chroot useradd -m builder 2>/dev/null || true
 
       - name: Build linux-avf
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo mkdir -p /chroot/build
           sudo cp -r pkgbuilds/linux-avf/* /chroot/build/
@@ -227,12 +264,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache built package
+        id: cache-package
+        uses: actions/cache@v4
+        with:
+          path: pkgbuilds/systemd-avf/*.pkg.tar.*
+          key: package-systemd-avf-${{ hashFiles('pkgbuilds/systemd-avf/PKGBUILD') }}
+
       - name: Install arch-chroot tool
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y arch-install-scripts
 
       - name: Cache Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         id: cache-chroot
         uses: actions/cache@v4
         with:
@@ -242,6 +288,7 @@ jobs:
             archlinuxarm-chroot-systemd-
 
       - name: Setup Arch Linux ARM chroot
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           if [ -f /tmp/chroot-cache.tar.zst ]; then
             echo "Restoring chroot from cache..."
@@ -264,6 +311,7 @@ jobs:
           sudo mkdir -p /chroot/build
 
       - name: Build systemd-avf
+        if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo cp -r pkgbuilds/systemd-avf/* /chroot/build/
           sudo arch-chroot /chroot chown -R builder:builder /build
